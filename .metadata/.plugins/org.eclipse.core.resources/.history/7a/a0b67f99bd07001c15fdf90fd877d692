@@ -1,0 +1,41 @@
+
+spring:
+  application:
+    name: GATEWAY-SERVICE
+  cloud:    gateway:      routes:      - id: account-service
+        uri: lb://ACCOUNT-SERVICE
+        predicates:          - Path=/account/**
+      
+      - id: ticket-service
+        uri: lb://TICKET-SERVICE
+        predicates:
+          - Path=/ticket/**
+        filters:
+        - name: CircuitBreaker
+          args:
+            name: ticket-service
+            fallbackUri: forward:/ticketfallback
+        
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    
+server:
+  port: 8787
+  
+management:  endpoints:    web:      exposure:        include: hystrix.stream
+        
+        
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000  
+        

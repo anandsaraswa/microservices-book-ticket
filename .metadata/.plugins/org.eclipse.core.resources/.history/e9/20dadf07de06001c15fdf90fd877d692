@@ -1,0 +1,19 @@
+package com.anandsaraswa.as.api.services;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.anandsaraswa.as.api.entity.Account;
+import com.anandsaraswa.as.api.repository.AccountRepository;
+
+@Service
+public class AccountService {
+	
+	@Autowired
+	private AccountRepository accountRepo;
+	
+	public Account saveAccount(Account account) {
+		return accountRepo.save(account);
+	}
+
+}

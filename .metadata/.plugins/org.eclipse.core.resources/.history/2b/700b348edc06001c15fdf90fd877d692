@@ -1,0 +1,5 @@
+package com.anandsaraswa.as.api.common;
+
+public class TransactionRequest {
+
+}

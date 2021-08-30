@@ -1,0 +1,22 @@
+package com.anandsaraswa.gateway;
+
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import reactor.core.publisher.Mono;
+
+@RestController
+public class FallbackController {
+	
+	@RequestMapping("/accountfallback")
+	public Mono<String> accountServiceFallback() {
+		return Mono.just("Account service taking too long or down, please try again later") ;
+	}
+	
+	@RequestMapping("/ticketfallback")
+	public Mono<String> ticketServiceFallback() {
+		return Mono.just("Ticket service taking too long or down, please try again later");
+	}
+
+}

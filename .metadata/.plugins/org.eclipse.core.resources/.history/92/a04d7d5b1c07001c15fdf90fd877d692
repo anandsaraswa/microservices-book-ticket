@@ -1,0 +1,19 @@
+package com.anandsaraswa.gateway;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class FallbackController {
+	
+	@GetMapping("/account/fallback")
+	public String accountServiceFallback() {
+		return "Account service taking too long or down, please try again later";
+	}
+	
+	@GetMapping("/ticket/fallback")
+	public String ticketServiceFallback() {
+		return "Ticket service taking too long or down, please try again later";
+	}
+
+}

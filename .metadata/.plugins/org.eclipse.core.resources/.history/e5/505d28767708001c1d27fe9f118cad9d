@@ -1,0 +1,4 @@
+spring:  application:    name: CONFIG-SERVER  cloud:    config:      server:        git:          uri: https://github.com/anandsaraswa/cloud-config-server-ticket
+server:
+  port: 9999
+  

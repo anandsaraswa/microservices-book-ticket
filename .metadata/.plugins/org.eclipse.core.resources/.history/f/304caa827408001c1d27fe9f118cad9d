@@ -1,0 +1,41 @@
+
+spring:
+  application:
+    name: GATEWAY-SERVICE
+  cloud:    gateway:      routes:      - id: account-service
+        uri: lb://ACCOUNT-SERVICE
+        predicates:          - Path=/account/**
+        filters:        - name: CircuitBreaker
+          args:            name: ACCOUNT-SERVICE
+            fallbackuri: forward:/fallback/account
+       
+      - id: ticket-service
+        uri: lb://TICKET-SERVICE
+        predicates:
+          - Path=/ticket/**
+        filters:
+        - name: CircuitBreaker
+          args:
+            name: TICKET-SERVICE
+            fallbackuri: forward:/fallback/ticket
+          
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000  
+            
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+        
+
+    
+server:
+  port: 8787
+  
+  

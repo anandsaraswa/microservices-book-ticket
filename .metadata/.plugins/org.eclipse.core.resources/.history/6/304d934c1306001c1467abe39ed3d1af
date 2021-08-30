@@ -1,0 +1,5 @@
+package com.anandsaraswa.as.api.entity;
+
+public class Account {
+
+}

@@ -1,0 +1,31 @@
+package com.anandsaraswa.as.api.services;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.anandsaraswa.as.api.common.Ticket;
+import com.anandsaraswa.as.api.common.TransactionRequest;
+import com.anandsaraswa.as.api.entity.Account;
+import com.anandsaraswa.as.api.repository.AccountRepository;
+
+@Service
+public class AccountService {
+	
+	@Autowired
+	private AccountRepository accountRepo;
+	
+	public Account saveAccount(TransactionRequest txnReq) {
+		Account  account = txnReq.getAccount();  
+		Ticket ticket = txnReq.getTicket();
+		ticket.setAccountId(account.getId());
+		ticket.setSource(account.getSource());
+		ticket.setDestination(account.getDestination());
+		ticket.setPrice(account.getPrice());
+		
+		//rest call
+		return accountRepo.save(account);
+	}
+	
+	
+
+}

@@ -1,0 +1,5 @@
+package com.anandsaraswa.gateway;
+
+public class FallbackController {
+
+}

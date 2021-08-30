@@ -1,0 +1,5 @@
+package com.anandsaraswa.as.api.repository;
+
+public class AccountRepository {
+
+}
