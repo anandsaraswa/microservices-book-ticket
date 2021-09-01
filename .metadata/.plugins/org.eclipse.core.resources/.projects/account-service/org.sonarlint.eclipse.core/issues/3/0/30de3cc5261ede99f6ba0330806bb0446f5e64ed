@@ -1,3 +1,8 @@
 
+i
+java:S1128"6Remove this unused import 'lombok.extern.slf4j.Slf4j'.(ûúÄ®8ìş²‚¹/HäRMINORZ
+CODE_SMELL
 x
-java:S2259#"LA "NullPointerException" could be thrown; "ticketResponse" is nullable here.(Ê¯ò¿8ÄĞ«¸/HûRMAJORZBUG
+java:S2259-"LA "NullPointerException" could be thrown; "ticketResponse" is nullable here.(Ê¯ò¿8ÄĞ«¸/HÎRMAJORZBUG
+•	java:S116"^Rename this field "ENDPOINT_TICKET_URL" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Ö‚¸îÿÿÿÿÿ8ïûø‚¹/HéRMINORZ
+CODE_SMELL

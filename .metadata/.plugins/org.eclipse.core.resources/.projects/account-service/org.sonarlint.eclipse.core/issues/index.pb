@@ -19,3 +19,5 @@ R
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
 t
 Dsrc/main/java/com/anandsaraswa/as/api/AccountServiceApplication.java,c\a\ca15cf1fef92b1364d38e8662276d3a84821bb28
+P
+ src/main/resources/bootstrap.yml,2\8\283df02559fc6e56de18ce4a783260b764128dcf

@@ -18,6 +18,16 @@ spring:
           args:
             name: TICKET-SERVICE
             fallbackuri: forward:/fallback/ticket
+       
+      - id: authenticate-service
+        uri: lb://AUTHENTICATE-SERVICE
+        predicates:
+          - Path=/secure/**
+        filters:
+        - name: CircuitBreaker
+          args:
+            name: AUTHENTICATE-SERVICE
+            fallbackuri: forward:/fallback/ticket
           
 hystrix:
   command:
