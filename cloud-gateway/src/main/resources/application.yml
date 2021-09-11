@@ -17,10 +17,6 @@ spring:
         predicates:
           - Path=/ticket/**
         filters:
-        - name: CircuitBreaker
-          args:
-            name: TICKET-SERVICE
-            fallbackuri: forward:/fallback/ticket
         - name: JwtAuthenticationFilterFactory
           args:
             name: TICKET-SERVICE
@@ -30,10 +26,14 @@ spring:
         predicates:
           - Path=/secure/**
         filters:
+        - name: JwtAuthenticationFilterFactory
+          args:
+            name: AUTHENTICATE-SERVICE
         - name: CircuitBreaker
           args:
             name: AUTHENTICATE-SERVICE
-            fallbackuri: forward:/fallback/ticket
+            fallbackuri: forward:/fallback/authenticate
+        
           
 hystrix:
   command:
@@ -41,7 +41,7 @@ hystrix:
       execution:
         isolation:
           thread:
-            timeoutInMilliseconds: 10000  
+            timeoutInMilliseconds: 30000  
             
 management:
   endpoints:

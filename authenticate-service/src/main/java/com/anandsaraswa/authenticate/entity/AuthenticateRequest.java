@@ -8,7 +8,6 @@ public class AuthenticateRequest {
 	public AuthenticateRequest() {
 	}	
 	
-	
 	public AuthenticateRequest(String username, String password) {
 		super();
 		this.username = username;
@@ -26,7 +25,6 @@ public class AuthenticateRequest {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-
 
 	@Override
 	public String toString() {

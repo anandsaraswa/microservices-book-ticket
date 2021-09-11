@@ -13,13 +13,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.anandsaraswa.authenticate.entity.AuthenticateRequest;
 import com.anandsaraswa.authenticate.entity.AuthenticateResponse;
+import com.anandsaraswa.authenticate.entity.TokenResponse;
 import com.anandsaraswa.authenticate.entity.Users;
+import com.anandsaraswa.authenticate.exceptions.UserNotFoundException;
 import com.anandsaraswa.authenticate.jwt.JwtUtil;
 import com.anandsaraswa.authenticate.service.UserService;
+
 
 @RestController
 @RequestMapping("/secure")
@@ -40,8 +44,7 @@ public class AuthenticateController {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
 					authenticateRequest.getUsername(), authenticateRequest.getPassword()));
 		} catch (BadCredentialsException e) {
-			throw new BadCredentialsException("Incorrect username or password");
-
+			throw new UserNotFoundException("Incorrect username or password");
 		}
 
 		final Authentication authentication = authenticationManager
@@ -52,11 +55,13 @@ public class AuthenticateController {
 		return new AuthenticateResponse(jwt);
 	}
 
-	@PreAuthorize("hasRole('EMPLOYEE')")
 	@GetMapping("/users")
 	public List<Users> getAllUsers() {
 		return userService.findAll();
 	}
 	
-	
+	@GetMapping("/token/validate")
+	public TokenResponse validateToken() {
+		return new TokenResponse("All ok","Employee",true);
+	}
 }

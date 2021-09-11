@@ -1,82 +1,95 @@
 package com.anandsaraswa.gateway.filter;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.xml.bind.DatatypeConverter;
-
+import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.anandsaraswa.gateway.config.AuthorizedMapper;
+import com.anandsaraswa.gateway.entity.AuthorizedPojo;
+import com.anandsaraswa.gateway.exceptions.JwtTokenMalformedException;
+import com.anandsaraswa.gateway.exceptions.JwtTokenMissingException;
 
+import reactor.core.publisher.Mono;
+
+@RefreshScope
 @Component
-public class JwtAuthenticationFilterFactory extends AbstractGatewayFilterFactory<JwtAuthenticationFilterFactory.Config> {
+public class JwtAuthenticationFilterFactory
+		extends AbstractGatewayFilterFactory<JwtAuthenticationFilterFactory.Config> {
 
-	private String SECRET_KEY = "secret";
-	
+	@Autowired
+	private JwtUtil jwtUtil;
+
 	public JwtAuthenticationFilterFactory() {
 		super(Config.class);
 	}
-	
+
+	String headerJWT;
+
 	@Override
 	public GatewayFilter apply(Config config) {
-		  return (exchange, chain) -> {
-				ServerHttpRequest request = exchange.getRequest();
+		return (exchange, chain) -> {
+			ServerHttpRequest request = exchange.getRequest();
 
-				final List<String> apiEndpoints = List.of("/secure/authenticate");
+			final List<String> apiEndpoints = List.of("/secure/authenticate");
 
-				Predicate<ServerHttpRequest> isApiSecured = r -> apiEndpoints.stream()
-						.noneMatch(uri -> r.getURI().getPath().contains(uri));
+			Predicate<ServerHttpRequest> isApiSecured = r -> apiEndpoints.stream()
+					.noneMatch(uri -> r.getURI().getPath().contains(uri));
 
-				if (isApiSecured.test(request)) {
-					if (!request.getHeaders().containsKey("Authorization")) {
+			if (isApiSecured.test(request)) {
+				HashMap<String,String> result = new HashMap<String, String>();
+           
+				if (!request.getHeaders().containsKey("Authorization")) {
+					ServerHttpResponse response = exchange.getResponse();
+					response.setStatusCode(HttpStatus.UNAUTHORIZED);
+					return response.setComplete();
+				}
+				headerJWT = request.getHeaders().getOrEmpty("Authorization").get(0);
+
+				if (headerJWT != null && headerJWT.startsWith("Bearer ")) {
+					headerJWT = headerJWT.substring(7);
+					try {
+						jwtUtil.validateToken(headerJWT);
+					} catch (JwtTokenMalformedException | JwtTokenMissingException e) {
 						ServerHttpResponse response = exchange.getResponse();
-						response.setStatusCode(HttpStatus.UNAUTHORIZED);
-
-						return response.setComplete();
+					     result.put("status", HttpStatus.UNAUTHORIZED.value()+"");
+			             result.put("message", e.getMessage());
+			             JSONObject jsonRes = new JSONObject(result);
+						DataBuffer bodyDataBuffer = response.bufferFactory().wrap(jsonRes.toJSONString().getBytes());
+						return response.writeWith(Mono.just(bodyDataBuffer));
 					}
-					String headerJWT = request.getHeaders().getOrEmpty("Authorization").get(0);
-					
-					if(headerJWT != null && headerJWT.startsWith("Bearer ")) {
-						headerJWT =  headerJWT.substring(7);
-						//username = jwtUtil.extractUsername(jwt);
-					}
-					
-					System.out.println("token----"+headerJWT);
-					Jwts.parser()         
-				       .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
-				       .parseClaimsJws(headerJWT).getBody();
-					System.out.println("token----get");
-					Claims claims = getClaims(headerJWT);
-					exchange.getRequest().mutate().header("id", String.valueOf(claims.get("id"))).build();
+				String role =	jwtUtil.getClaims(headerJWT).get("scopes",String.class);
 				
+				if(AuthorizedMapper.authorizedMap.get(new AuthorizedPojo(request.getURI().getPath(), request.getMethod().name())) !=  null 
+						&& !role.equals(AuthorizedMapper.authorizedMap.get(new AuthorizedPojo(request.getURI().getPath(), request.getMethod().name())))) {
+					ServerHttpResponse response = exchange.getResponse();
+					
+					result.put("status", HttpStatus.UNAUTHORIZED.value()+"");
+		            result.put("message","You are not authorized to access this resource");
+		            JSONObject jsonRes = new JSONObject(result);
+					DataBuffer bodyDataBuffer = response.bufferFactory().wrap(jsonRes.toJSONString().getBytes(StandardCharsets.UTF_8));
+					return response.writeWith(Mono.just(bodyDataBuffer));
+				}
+				}
 			}
-				return chain.filter(exchange);
-};
+			return chain.filter(exchange);
+		};
 	}
 	
-	public Claims getClaims(final String token) {
-		try {
-			System.out.println("getclaims-------------------");
-			Claims body = Jwts.parser()         
-				       .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
-				       .parseClaimsJws(token).getBody();
-			return body;
-		} catch (Exception e) {
-			System.out.println(e.getMessage() + " => " + e);
-		}
-		return null;
-	}
-	
+
 	public static class Config {
 		// Put the configuration properties
 	}
-
 
 }
